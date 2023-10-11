@@ -42,7 +42,7 @@ def univariate_analysis(variable):
             offset = max(frequency) * 0.005
             wrap_labels(ax, 8)
             for i in range(len(values)):
-                ax.annotate("{:.2f}%".format(percentage[i]), (i - 0.25, frequency[i] + offset))
+                ax.annotate("{:.2f}%".format(percentage[i]), (i-.1, frequency[i] + offset))
     plt.show()
 
 
@@ -79,14 +79,16 @@ def wrap_labels(ax, width, break_long_words=False):
 
 if __name__ == '__main__':
     data_cleaned = data_processing.clean_data()
-
     for i in range(len(data_cleaned.columns)):
         variable = data_cleaned.columns[i]
         univariate_analysis(variable)
 
-    for i in range(len(data_cleaned.columns)):
-        variable = data_cleaned.columns[i]
-        target = "chd"
-        bivariate_analysis(target, variable)
-    bivariate_analysis("chd", "age")
-    univariate_analysis("drinks_consumed_last_30_days")
+    # for i in range(len(data_cleaned.columns)):
+    #     variable = data_cleaned.columns[i]
+    #     target = "chd"
+    #     bivariate_analysis(target, variable)
+    # bivariate_analysis("chd", "age")
+    # univariate_analysis("drinks_consumed_last_30_days")
+    # data_cleaned["drinks_consumed_last_30_days"].hist(log = True, bins = 50, edgecolor = "black")
+    # data_cleaned.hist()
+    # data_cleaned.plot.bar()

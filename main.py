@@ -10,6 +10,7 @@ plt.ioff()
 
 
 def univariate_analysis():
+    variable = "drinks_consumed_last_30_days"
     for variable in data_cleaned.columns:
         fig, ax = plt.subplots(figsize=(13, 6))
         if variable == "state":
@@ -29,7 +30,8 @@ def univariate_analysis():
                 ax1.set_xlabel(variable)
                 ax1.set_xticklabels(["0", "1 or Greater"])
                 ax2 = sns.histplot(data_cleaned, x=variable, log_scale=True, ax=axes[1])
-                ax2.set_xticks([1, 100])
+                ax2.set_xticks([1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 500, 1000])
+                ax2.set_xticklabels([1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 500, 1000])
             else:
                 ax = sns.histplot(data_cleaned, x=variable)
         else:

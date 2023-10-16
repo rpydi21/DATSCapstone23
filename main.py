@@ -10,7 +10,6 @@ plt.ioff()
 
 
 def univariate_analysis():
-    variable = "drinks_consumed_last_30_days"
     for variable in data_cleaned.columns:
         fig, ax = plt.subplots(figsize=(13, 6))
         if variable == "state":

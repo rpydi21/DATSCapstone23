@@ -1,23 +1,35 @@
-def univariate_analysis ():
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import data_processing
+import squarify  # pip install squarify (algorithm for treemap)
+import seaborn as sns
+import textwrap
+from collections import Counter
+plt.ioff()
+
+
+def univariate_analysis():
     for variable in data_cleaned.columns:
-        plt.subplots(figsize=(13, 6))
+        fig, ax = plt.subplots(figsize=(13, 6))
         if variable == "state":
             data = data_cleaned.loc[:, variable].dropna()
             plt.axis("off")
             ax = squarify.plot(sizes=list(Counter(data).values()), label=list(Counter(data).keys()), alpha=.5,
-                          text_kwargs={'fontsize': 5}, pad=0.1)
+                               text_kwargs={'fontsize': 5}, pad=0.1)
 
         elif data_cleaned[variable].dtype == "float64":
             if variable == "drinks_consumed_last_30_days":
                 fig, axes = plt.subplots(1, 2)
                 altered_data = data_cleaned[variable]
-                altered_data = pd.DataFrame({"value":[value if value == 0 else 1 for value in altered_data]}, dtype = "str")
-                ax1 = sns.histplot(altered_data, x="value", ax = axes[0])
+                altered_data = pd.DataFrame({"value": [value if value == 0 else 1 for value in altered_data]},
+                                            dtype="str")
+                ax1 = sns.histplot(altered_data, x="value", ax=axes[0])
                 ax1.set_xticks(range(len(ax1.get_xticklabels())))
                 ax1.set_xlabel(variable)
                 ax1.set_xticklabels(["0", "1 or Greater"])
-                ax2 = sns.histplot(data_cleaned, x=variable, log_scale=True, ax = axes[1])
-                ax2.set_xticks([1,100])
+                ax2 = sns.histplot(data_cleaned, x=variable, log_scale=True, ax=axes[1])
+                ax2.set_xticks([1, 100])
             else:
                 ax = sns.histplot(data_cleaned, x=variable)
         else:
@@ -29,8 +41,7 @@ def univariate_analysis ():
         ax.set(xlabel=None)
 
 
-
-def bivariate_analysis(target, variable):
+def bivariate_analysis():
     target = "chd"
     for variable in data_cleaned.columns:
         if variable == target or variable == "state":
@@ -55,20 +66,9 @@ def bivariate_analysis(target, variable):
         ax.set_xticklabels(labels, rotation=0)
         plt.show()
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-plt.ioff()
-from collections import Counter
-import data_processing
-import squarify  # pip install squarify (algorithm for treemap)
-import seaborn as sns
-import textwrap
 
 if __name__ == '__main__':
     data_cleaned = data_processing.clean_data()
 
     univariate_analysis()
     bivariate_analysis()
-
-

@@ -317,32 +317,26 @@ def clean_data ():
     data_select_variable[variable_name] = data_select_variable[variable_name].map(replace_dict)
 
     variable_name = "days_alcohol_consumed"
-    for x in range(len(data_select_variable[variable_name])):
-        if str(data_select_variable[variable_name][x])[0] == "1":
-            new_value = int(str(data_select_variable[variable_name][x])[1:3]) * 4
-            data_select_variable._set_value(x, variable_name, new_value)
-        elif str(data_select_variable[variable_name][x])[0] == "2":
-            new_value = int(str(data_select_variable[variable_name][x])[1:3])
-            data_select_variable._set_value(x, variable_name, new_value)
-    replace_dict = {
-        777: np.nan,
-        888: 0,
-        999: np.nan
-    }
-    data_select_variable[variable_name] = data_select_variable[variable_name].map(replace_dict)
+    data_select_variable[variable_name] = data_select_variable[variable_name].replace(
+        [777, 888, 999], [np.nan, 0, np.nan]
+    )
+    data_select_variable[variable_name] = [int(str(value)[1:3]) * 4 if str(value)[0] == "1" else
+           int(str(value)[1:3]) if str(value)[0] == "2" else
+           value
+           for value in data_select_variable[variable_name]]
 
     variable_name = "avg_drink_consumed"
-    replace_dict = {
-        88: 0,
-        77: np.nan,
-        99: np.nan,
-        np.nan: 0
-    }
-    data_select_variable[variable_name] = data_select_variable[variable_name].map(replace_dict)
+    data_select_variable[variable_name] = data_select_variable[variable_name].replace(
+        [88, 77, 99], [0, np.nan, np.nan]
+    )
 
-    drinks_consumed_last_30_days = data_select_variable["days_alcohol_consumed"].multiply(data_select_variable["avg_drink_consumed"])
-    data_select_variable['drinks_consumed_last_30_days'] = drinks_consumed_last_30_days.values
+    data_select_variable.loc[data_select_variable["days_alcohol_consumed"] == 0, "avg_drink_consumed"] = float(0)
+    data_select_variable.loc[data_select_variable["days_alcohol_consumed"] == np.nan, "avg_drink_consumed"] = np.nan
+
+    data_select_variable['drinks_consumed_last_30_days'] = (data_select_variable["days_alcohol_consumed"]
+                                                            .multiply(data_select_variable["avg_drink_consumed"])
+                                                            .values)
     data_select_variable = data_select_variable.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
-    del(data, drinks_consumed_last_30_days, new_value, replace_dict, variable_name, x)
+    del(data, replace_dict, variable_name)
 
     return data_select_variable

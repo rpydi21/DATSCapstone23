@@ -1,3 +1,4 @@
+#%%
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ from collections import Counter
 plt.ioff()
 import plotly.express as px
 
-
+#%%
 def univariate_analysis():
     for variable in data_cleaned.columns:
         fig, ax = plt.subplots(figsize=(13, 6))
@@ -42,7 +43,7 @@ def univariate_analysis():
         ax.set_title(variable)
         ax.set(xlabel=None)
 
-
+        
 def bivariate_analysis():
     target = "chd"
     for variable in data_cleaned.columns:
@@ -67,11 +68,12 @@ def bivariate_analysis():
         ax.set_xticks(list(range(0, len(labels))))
         ax.set_xticklabels(labels, rotation=0)
         plt.show()
-
+#%%
 
 if __name__ == '__main__':
+    #%%
     data_cleaned = data_processing.clean_data()
-
+    #%%
     univariate_analysis()
     bivariate_analysis()
     df_dummies = pd.get_dummies(data_cleaned)

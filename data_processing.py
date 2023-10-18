@@ -1,7 +1,12 @@
+# %%
 import pandas as pd
 import numpy as np
 
+def clean_alcohol(value):
+    
+
 def clean_data ():
+    #%%
     data = pd.read_csv("../data/data.csv")
     data_select_variable = data[["_STATE", "DISPCODE", "PRIMINSR", "PERSDOC3",
                 "MEDCOST1", "CHECKUP1", "CVDSTRK3", "CHCSCNC1", "CHCOCNC1", "CHCCOPD3", "ADDEPEV3",
@@ -338,6 +343,5 @@ def clean_data ():
                                                             .values)
     data_select_variable = data_select_variable.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
     del(data, replace_dict, variable_name)
-
+#%%
     return data_select_variable
-

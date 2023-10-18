@@ -340,3 +340,4 @@ def clean_data ():
     del(data, replace_dict, variable_name)
 
     return data_select_variable
+

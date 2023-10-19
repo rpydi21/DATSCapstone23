@@ -8,10 +8,10 @@ import seaborn as sns
 import textwrap
 from collections import Counter
 import plotly.express as px
+import scipy.stats as stats
 
 #%%
-def greater_than_0 (value):
-    return value if value == 0 else 1
+def greater_than_0 (value): return value if value == 0 else 1
 
 def univariate_analysis(variable):
     if variable.dtype == "float64":
@@ -45,10 +45,15 @@ def univariate_analysis(variable):
             ax.set_xticklabels(labels)
     plt.show()
 
-def bivariate_analysis_test(variable):
+def bivariate_analysis(variable):
     target = "chd"
-    if not(variable.name == target or variable.name == "state" or variable.dtype == "float64"):
-        data = pd.concat([variable, data_cleaned[target]], axis = 1)
+    data = pd.concat([variable, data_cleaned[target]], axis = 1)
+    if variable.dtype == "float64":
+        fig, ax = plt.subplots(figsize=(13, 6))
+        sns.boxplot(data, x = target, y = variable)
+        ax.set_title(variable.name)
+        ax.set(xlabel=None)
+    elif not(variable.name == target):
         fig, ax = plt.subplots(figsize=(13, 6))
         ax = sns.countplot(data, x = variable.name, hue = target)
         ax.set_title(variable.name)
@@ -60,11 +65,40 @@ def bivariate_analysis_test(variable):
         else:
             ax.set_xticklabels(labels)
 
+
 #%%
-data_cleaned.apply(univariate_analysis_test)
-data_cleaned.apply(bivariate_analysis_test)
+data_cleaned.apply(univariate_analysis)
+data_cleaned.apply(bivariate_analysis)
+
+#%%
+
+def chi_square (variable):
+    data = pd.crosstab(variable, data_cleaned["chd"])
+
+    # Perform a chi-squared test
+    chi2, p, _, _ = stats.chi2_contingency(data)
+
+    # Check for statistical significance
+    print(variable.name)
+    if p < 0.05:
+        print("There is a significant association between the variables.")
+    else:
+        print("There is no significant association between the variables.")
+        
 
 #testing
+data_cleaned["health_insurance"].nunique()
+
+data_cleaned.apply(chi_square)
+
+pd.crosstab( data_cleaned["health_insurance"], columns = data_cleaned["chd"])
+test = data_cleaned.loc[:, data_cleaned.columns != 'chd']
+
+
+
+
+
+
 df_dummies = pd.get_dummies(data_cleaned)
 
 observed = df_dummies.groupby('health_insurance').size().values.reshape(-1, 1)

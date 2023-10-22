@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 from data_processing import data_cleaned
-# %%
+#%%
 data = data_cleaned
 label_encoders = {}
 for column in data.columns:
@@ -29,11 +29,13 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy:.2f}")
 
 print(classification_report(y_test, y_pred))
-# %%
+
+
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix:")
 print(cm)
+
 
 # %%
 from sklearn.tree import export_graphviz
@@ -43,4 +45,3 @@ import pydotplus
 dot_data = export_graphviz(clf, out_file=None, feature_names=X.columns, filled=True, rounded=True, special_characters=True)
 graph = pydotplus.graph_from_dot_data(dot_data)
 graph.write_png('decision_tree.png')
-

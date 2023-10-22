@@ -281,7 +281,7 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
 variable_name = "income"
 replace_dict = {
-    1: "Less than $15,000",
+    1: "$14,999 or less",
     2: "$15,000 to < $25,000",
     3: "$25,000 to < $35,000",
     4: "$35,000 to < $50,000",

@@ -87,4 +87,3 @@ result = data_cleaned.apply(chi_square)
 
 # Print the result
 print(result)
-# %%

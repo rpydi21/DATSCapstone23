@@ -11,8 +11,8 @@ data_cleaned = data[["_STATE", "DISPCODE", "PRIMINSR", "PERSDOC3",
             "MEDCOST1", "CHECKUP1", "CVDSTRK3", "CHCSCNC1", "CHCOCNC1", "CHCCOPD3", "ADDEPEV3",
             "CHCKDNY2", "DIABETE4", "EMPLOY1", "PNEUVAC4", "HIVRISK5", "HPVADVC4", "SHINGLE2",
             "_METSTAT", "GENHLTH", "_TOTINDA", "_MICHD", "_ASTHMS1", "_DRDXAR2", "_RACEPR1",
-            "_SEX", "_AGEG5YR", "_BMI5", "_EDUCAG", "_INCOMG1", "_RFMAM22", "_HADCOLN",
-            "_HADSIGM", "_SMOKER3", "ALCDAY4", "AVEDRNK3"]]
+            "_SEX", "_HADCOLN", "_HADSIGM", "_AGEG5YR", "_BMI5", "_EDUCAG", "_INCOMG1", 
+            "_RFMAM22", "_SMOKER3", "ALCDAY4", "AVEDRNK3"]]
 data_cleaned = data_cleaned[data_cleaned["DISPCODE"] == 1100]
 data_cleaned = data_cleaned.drop(columns = 'DISPCODE')
 data_cleaned = data_cleaned.rename(columns = {"_STATE": "state",
@@ -24,9 +24,9 @@ data_cleaned = data_cleaned.rename(columns = {"_STATE": "state",
         "HIVRISK5" : "hiv_risk", "HPVADVC4" : "hpv_shot", "SHINGLE2" : "shingles_shot",
         "_METSTAT" : "metropolitan_status", "GENHLTH" : "health_status", "_TOTINDA" : "physical activity",
         "_MICHD" : "chd", "_ASTHMS1" : "asthma", "_DRDXAR2" : "arthritis",
-        "_RACEPR1" : "race", "_SEX" : "sex", "_AGEG5YR" : "age", "_BMI5" : "bmi",
-        "_EDUCAG" : "education", "_INCOMG1" : "income", "_RFMAM22" : "mammogram",
-        "_HADCOLN" : "colonoscopy", "_HADSIGM" : "sigmoidoscopy", "_SMOKER3" : "smoking",
+        "_RACEPR1" : "race", "_SEX" : "sex", "_HADCOLN" : "colonoscopy", "_HADSIGM" : "sigmoidoscopy",
+        "_AGEG5YR" : "age", "_BMI5" : "bmi", "_EDUCAG" : "education", "_INCOMG1" : "income",
+        "_RFMAM22" : "mammogram", "_SMOKER3" : "smoking",
         "ALCDAY4" : "days_alcohol_consumed", "AVEDRNK3" : "avg_drink_consumed"
 })
 data_cleaned.reset_index(inplace=True, drop=True)
@@ -247,21 +247,35 @@ replace_dict = {
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
+variable_name = "colonoscopy"
+replace_dict = {
+    1: "Yes",
+    2: "No"
+}
+data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
+#if age is less than 45, value for colonoscopy is "Age Less than 45"
+data_cleaned.loc[data_cleaned["age"] < 7, "colonoscopy"] = "Age Less than 45"
+
+variable_name = "sigmoidoscopy"
+data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
+#if age is less than 45, value for sigmoidoscopy is "Age Less than 45"
+data_cleaned.loc[data_cleaned["age"] < 7, "sigmoidoscopy"] = "Age Less than 45"
+
 variable_name = "age"
 replace_dict = {
-    1: "Age 18 to 24",
-    2: "Age 25 to 29",
-    3: "Age 30 to 34",
-    4: "Age 35 to 39",
-    5: "Age 40 to 44",
-    6: "Age 45 to 49",
-    7: "Age 50 to 54",
-    8: "Age 55 to 59",
-    9: "Age 60 to 64",
-    10: "Age 65 to 69",
-    11: "Age 70 to 74",
-    12: "Age 75 to 79",
-    13: "Age 80 or older",
+    1: "18 to 24",
+    2: "25 to 29",
+    3: "30 to 34",
+    4: "35 to 39",
+    5: "40 to 44",
+    6: "45 to 49",
+    7: "50 to 54",
+    8: "55 to 59",
+    9: "60 to 64",
+    10: "65 to 69",
+    11: "70 to 74",
+    12: "75 to 79",
+    13: "80 or older",
     14: "Don't know / Not Sure / Refused / Missing"
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
@@ -300,16 +314,6 @@ replace_dict = {
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
-variable_name = "colonoscopy"
-replace_dict = {
-    1: "Yes",
-    2: "No"
-}
-data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
-
-variable_name = "sigmoidoscopy"
-data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
-
 variable_name = "smoking"
 replace_dict = {
     1: "Current everyday smoker",
@@ -337,4 +341,9 @@ data_cleaned.loc[data_cleaned["days_alcohol_consumed"] == np.nan, "avg_drink_con
 
 data_cleaned['drinks_consumed_last_30_days'] = data_cleaned["days_alcohol_consumed"] * (data_cleaned["avg_drink_consumed"])
 data_cleaned = data_cleaned.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
+
+#list columns with 80% or more missing values
+data_cleaned.isna().sum()
+#if any column has 80% or more missing values, drop it
+data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
 # %%

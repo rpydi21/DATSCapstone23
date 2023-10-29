@@ -66,6 +66,7 @@ def bivariate_analysis(variable):
 #%%
 plots = data_cleaned.apply(univariate_analysis)
 plots = data_cleaned.apply(bivariate_analysis)
+data_cleaned["chd"].value_counts()
 
 #%%
 #run chi-square test with chd as target variable and return only p value

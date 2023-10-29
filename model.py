@@ -9,6 +9,11 @@ from data_processing import data_cleaned
 from sklearn.metrics import confusion_matrix
 #%%
 data = data_cleaned.copy()
+#count na in target variable
+data_cleaned['chd'].isna().sum()
+data_cleaned.countna()
+
+#try clustering
 data.dropna(inplace = True)
 label_encoders = {}
 for column in data.columns:
@@ -79,3 +84,13 @@ print(report)
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix:")
 print(cm)
+
+
+
+
+#%%
+#USE F1 MACRO INSTEAD OF ACCURACY
+#RECALL
+#ROC AND AOC
+#more false positives than false negatives
+#more sensitivisity than specificity instead of false positives/negatives

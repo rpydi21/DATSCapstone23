@@ -282,6 +282,8 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
 variable_name = "bmi"
 data_cleaned[variable_name] = data_cleaned[variable_name]/100
+#fill na values with median bmi
+data_cleaned[variable_name] = data_cleaned[variable_name].fillna(data_cleaned[variable_name].median())
 
 variable_name = "education"
 replace_dict = {
@@ -292,6 +294,7 @@ replace_dict = {
     9: "Don't know / Not Sure / Refused / Missing"
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
+
 
 variable_name = "income"
 replace_dict = {
@@ -341,6 +344,8 @@ data_cleaned.loc[data_cleaned["days_alcohol_consumed"] == np.nan, "avg_drink_con
 
 data_cleaned['drinks_consumed_last_30_days'] = data_cleaned["days_alcohol_consumed"] * (data_cleaned["avg_drink_consumed"])
 data_cleaned = data_cleaned.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
+#fill na values with median drinks consumed
+data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_last_30_days'].fillna(data_cleaned['drinks_consumed_last_30_days'].median())
 
 #list columns with 80% or more missing values
 data_cleaned.isna().sum()

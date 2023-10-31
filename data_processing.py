@@ -347,8 +347,6 @@ data_cleaned = data_cleaned.drop(["days_alcohol_consumed", "avg_drink_consumed"]
 #fill na values with median drinks consumed
 data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_last_30_days'].fillna(data_cleaned['drinks_consumed_last_30_days'].median())
 
-#list columns with 80% or more missing values
-data_cleaned.isna().sum()
 #if any column has 80% or more missing values, drop it
 data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
 # %%

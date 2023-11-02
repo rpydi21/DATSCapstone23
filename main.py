@@ -86,5 +86,7 @@ def chi_square (variable):
 # Apply the chi_square function to each column in data_cleaned
 result = data_cleaned.apply(chi_square)
 
+
+
 # Print the result
 print(result)

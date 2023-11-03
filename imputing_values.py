@@ -37,7 +37,9 @@ def hot_deck_imputation(df, k_neighbors=1):
     for row_index, row in df.iterrows():
         if row.isnull().any():
             # Find similar cases using k-nearest neighbors
-            X = df.dropna()  # Use non-missing rows for comparison
+            #get all columns without missing value
+            columns_with_missing = row.index[row.isnull()]
+            X = df.dropna().drop(columns_with_missing, axis = 1) # Use non-missing rows for comparison
             y = row.dropna()
             
             if len(X) > k_neighbors:

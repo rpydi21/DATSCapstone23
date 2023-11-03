@@ -30,34 +30,84 @@ data_encoded = data_cleaned.apply(label_encoding)
 from sklearn.neighbors import NearestNeighbors
 df = data_encoded.copy()
 
+df.isnull().sum()
+df["chd"].unique()
+
 row = df.iloc[209]
+row_index = 209
 row.isnull().any()
+
+row = df.iloc[11]
+row_index = 11
+row.isnull().sum()
+
+#find row with at least one na
+
 def hot_deck_imputation(df, k_neighbors=1):
     # Iterate through each row with missing values
-    for row_index, row in df.iterrows():
+    #get list of all rows with missing data
+    rows_with_missing = df[df.isnull().any(axis=1)]
+    #iterate through each row
+    for row_index, row in rows_with_missing.iterrows():
         if row.isnull().any():
             # Find similar cases using k-nearest neighbors
             #get all columns without missing value
-            columns_with_missing = row.index[row.isnull()]
-            X = df.dropna().drop(columns_with_missing, axis = 1) # Use non-missing rows for comparison
+            colnames_with_missing = row.index[row.isnull()]
+            X = df.dropna().drop(colnames_with_missing, axis = 1) # Use non-missing rows for comparison
             y = row.dropna()
             
             if len(X) > k_neighbors:
-                
                 # Fit a nearest neighbors model
                 nn = NearestNeighbors(n_neighbors=k_neighbors)
                 nn.fit(X)
                 
                 # Find the nearest neighbors
                 _, indices = nn.kneighbors([y])
-                
+
+                #get entire columns with missing value
+                columns_with_missing = df[colnames_with_missing]
+                col = "colonoscopy"
+                for col in columns_with_missing.columns:
+                    col_index = df.columns.get_loc(col)
+                    nearest_neighbor_index = indices[0][0]
+                    df.at[row_index, col] = df.iloc[nearest_neighbor_index][col]
+
+    
+                # col = df["chd"]
+                # col_index = df.columns.get_loc("chd")
                 # Replace missing values with values from the nearest neighbor(s)
-                for col_index, col in enumerate(df.columns):
-                    if pd.isna(row[col]):
-                        nearest_neighbor_index = indices[0][0]
-                        df.at[row_index, col] = X.iloc[nearest_neighbor_index][col]
+                # for col_index, col in enumerate(df.columns):
+                #     if pd.isna(row[col]):
+                #         nearest_neighbor_index = indices[0][0]
+                #         df.at[row_index, col] = df.iloc[nearest_neighbor_index][col_index]
     
     return df
+    
+    # for row_index, row in df.iterrows():
+    #     if row.isnull().any():
+    #         # Find similar cases using k-nearest neighbors
+    #         #get all columns without missing value
+    #         columns_with_missing = row.index[row.isnull()]
+    #         X = df.dropna().drop(columns_with_missing, axis = 1) # Use non-missing rows for comparison
+    #         y = row.dropna()
+            
+    #         if len(X) > k_neighbors:
+                
+    #             # Fit a nearest neighbors model
+    #             nn = NearestNeighbors(n_neighbors=k_neighbors)
+    #             nn.fit(X)
+                
+    #             # Find the nearest neighbors
+    #             _, indices = nn.kneighbors([y])
+    #             # col = df["chd"]
+    #             # col_index = df.columns.get_loc("chd")
+    #             # Replace missing values with values from the nearest neighbor(s)
+    #             for col_index, col in enumerate(df.columns):
+    #                 if pd.isna(row[col]):
+    #                     nearest_neighbor_index = indices[0][0]
+    #                     df.at[row_index, col] = df.iloc[nearest_neighbor_index][col_index]
+    
+    # return df
 #%%
 #count na in each column
 print(data_encoded.isnull().sum())

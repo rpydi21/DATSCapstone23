@@ -349,7 +349,4 @@ data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_las
 
 #if any column has 80% or more missing values, drop it
 data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
-
-#count number of values equal to "Don't know / Not Sure / Refused / Missing" in each column
-data_cleaned.isin(["Don't know / Not Sure / Refused / Missing"]).sum()
 # %%

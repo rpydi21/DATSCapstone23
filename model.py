@@ -5,9 +5,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
-from data_processing import data_cleaned
 
-data = data_cleaned.copy()
+data_imputed = pd.read_csv("../data/data_imputed.csv")
+data = data_imputed.copy()
 data.dropna(inplace = True)
 
 label_encoders = {}
@@ -186,8 +186,8 @@ y = downsampled_data['chd']  # Target variable
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 #get index of categorical features
-cat_cols = data_cleaned.select_dtypes(include='object').columns
-cat_cols_idx = [data_cleaned.columns.get_loc(col) for col in cat_cols]
+cat_cols = data_imputed.select_dtypes(include='object').columns
+cat_cols_idx = [data_imputed.columns.get_loc(col) for col in cat_cols]
 
 # Apply SMOTE to the training data
 smote = SMOTENC(random_state=42, categorical_features = cat_cols_idx)
@@ -214,6 +214,18 @@ print(report)
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix:")
 print(cm)
+#%%
+from sklearn.tree import DecisionTreeClassifier
+# Get feature importances
+importances = clf.feature_importances_
+
+# Print the name and importance of each feature 
+for feature_name, importance in zip(X.columns, importances):
+    print(f"{feature_name}: {importance}")
+#sort features by importance
+sorted(zip(importances, X.columns), reverse=True)
+
+
 #%%
 #USE F1 MACRO INSTEAD OF ACCURACY
 #RECALL

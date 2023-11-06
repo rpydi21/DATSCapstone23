@@ -2,7 +2,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from data_processing import data_cleaned
 import seaborn as sns
 import textwrap
 from collections import Counter
@@ -44,8 +43,8 @@ def univariate_analysis(variable):
     plt.show()
 
 def bivariate_analysis(variable):
-    target = "chd"
-    data = pd.concat([variable, data_cleaned[target]], axis = 1)
+    target = "other_cancer"
+    data = pd.concat([variable, data_imputed[target]], axis = 1)
     if variable.dtype == "float64":
         fig, ax = plt.subplots(figsize=(13, 6))
         sns.boxplot(data, x = target, y = variable)
@@ -64,29 +63,28 @@ def bivariate_analysis(variable):
             ax.set_xticklabels(labels)
     plt.show()
 #%%
-plots = data_cleaned.apply(univariate_analysis)
-plots = data_cleaned.apply(bivariate_analysis)
-data_cleaned["chd"].value_counts()
+data_imputed = pd.read_csv("../data/data_imputed.csv")
+plots = data_imputed.apply(univariate_analysis)
+plots = data_imputed.apply(bivariate_analysis)
 
-#%%
+#%% chi-squre (likely not used)
 #run chi-square test with chd as target variable and return only p value
-def chi_square (variable):
-    data = pd.crosstab(variable, data_cleaned["chd"])
+# def chi_square (variable):
+#     data = pd.crosstab(variable, data_cleaned["chd"])
 
-    # Perform a chi-squared test
-    chi2, p_value, dof, expected = stats.chi2_contingency(data)
+#     # Perform a chi-squared test
+#     chi2, p_value, dof, expected = stats.chi2_contingency(data)
 
-    # Check for statistical significance
-    #display chi2 (rounded to 2 decimal points) and p-value (rounded to 3 decimal points) as well as if its significant or not (p-value < 0.05)
-    if p_value < 0.05:
-        return f"chi2: {round(chi2, 2)}, p-value: {round(p_value, 3)}, significant"
-    else:
-        return f"chi2: {round(chi2, 2)}, p-value: {round(p_value, 3)}, not significant"
+#     # Check for statistical significance
+#     #display chi2 (rounded to 2 decimal points) and p-value (rounded to 3 decimal points) as well as if its significant or not (p-value < 0.05)
+#     if p_value < 0.05:
+#         return f"chi2: {round(chi2, 2)}, p-value: {round(p_value, 3)}, significant"
+#     else:
+#         return f"chi2: {round(chi2, 2)}, p-value: {round(p_value, 3)}, not significant"
+
+# # Apply the chi_square function to each column in data_cleaned
+# result = data_cleaned.apply(chi_square)
+
+# # Print the result
+# print(result)
 #%%
-# Apply the chi_square function to each column in data_cleaned
-result = data_cleaned.apply(chi_square)
-
-
-
-# Print the result
-print(result)

@@ -79,5 +79,5 @@ for column in cat_columns:
     data_imputed[column] = label_encoders[column].inverse_transform(data_imputed[column].astype(int))
 
 #export to csv
-data_imputed.to_csv("../data/data_cleaned_imputed.csv", index=False)
+data_imputed.to_csv("../data/data_imputed.csv", index=False)
 #%%

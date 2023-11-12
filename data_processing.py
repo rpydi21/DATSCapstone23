@@ -254,12 +254,12 @@ replace_dict = {
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 #if age is less than 45, value for colonoscopy is "Age Less than 45"
-data_cleaned.loc[data_cleaned["age"] < 7, "colonoscopy"] = "Age Less than 45"
+data_cleaned.loc[data_cleaned["age"] < 6, "colonoscopy"] = "Age Less than 45"
 
 variable_name = "sigmoidoscopy"
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 #if age is less than 45, value for sigmoidoscopy is "Age Less than 45"
-data_cleaned.loc[data_cleaned["age"] < 7, "sigmoidoscopy"] = "Age Less than 45"
+data_cleaned.loc[data_cleaned["age"] < 6, "sigmoidoscopy"] = "Age Less than 45"
 
 variable_name = "age"
 replace_dict = {
@@ -349,4 +349,7 @@ data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_las
 
 #if any column has 80% or more missing values, drop it
 data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
+
+#export cleaned data to csv
+data_cleaned.to_csv("../data/data_cleaned.csv", index=False)
 # %%

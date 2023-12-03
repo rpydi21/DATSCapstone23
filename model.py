@@ -11,6 +11,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.ensemble import RandomForestClassifier
 from imblearn.over_sampling import SMOTENC
+from sklearn.metrics import recall_score, precision_score
 
 data = pd.read_csv("../data/data_imputed.csv")
 #drop values where other_cancer is equal to don't know
@@ -53,7 +54,6 @@ def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_cl
         return clf
     
 
-
 def random_forest(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
     if class_weight is None:
         clf = RandomForestClassifier(n_estimators=100, random_state=42)
@@ -89,6 +89,12 @@ def model_results(y_pred, y_test, y_pred_proba):
     
     roc_auc = roc_auc_score(y_test, y_pred_proba)
     print('ROC AUC score:', roc_auc)
+
+    sensitivity = recall_score(y_test, y_pred)
+    print('Sensitivity:', sensitivity)  
+
+    precision = precision_score(y_test, y_pred)
+    print('Precision:', precision)
 
 def feature_importance(clf):
     importances = clf.feature_importances_
@@ -174,10 +180,12 @@ print("\nRandom Forest with Oversampling")
 random_forest(X_resampled, X_test, y_resampled, y_test)
 
 # %%
+ratio = 4
+majority_sample_size = int(len(data[data[target]==1]) * ratio)
 # Downsample majority class to 50000 samples
 majority_downsampled = resample(data[data[target]==0],
                                 replace=False, # sample without replacement
-                                n_samples=50000, # number of samples to downsample to
+                                n_samples= majority_sample_size, # number of samples to downsample to
                                 random_state=42) # reproducible results
 
 # Combine minority class and downsampled majority class
@@ -197,10 +205,10 @@ smote = SMOTENC(random_state=42, categorical_features = cat_cols_idx)
 X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
 
 # %%
-print("Decision Tree with SMOTENC")
-clf = decision_tree(X_resampled, X_test, y_resampled, y_test, return_clf=True)
-print ("Feature Importances:")
-feature_importance(clf)
+# print("Decision Tree with SMOTENC")
+# clf = decision_tree(X_resampled, X_test, y_resampled, y_test, return_clf=True)
+# print ("Feature Importances:")
+# feature_importance(clf)
 
 print("\nRandom Forest with SMOTENC")
 clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)

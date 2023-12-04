@@ -4,14 +4,14 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score, recall_score, precision_score
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight, resample
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.ensemble import RandomForestClassifier
 from imblearn.over_sampling import SMOTENC
-from sklearn.metrics import recall_score, precision_score
+import joblib
 
 data = pd.read_csv("../data/data_imputed.csv")
 #drop values where other_cancer is equal to don't know
@@ -27,6 +27,7 @@ for column in data.columns:
         le = LabelEncoder()
         data[column] = le.fit_transform(data[column])
         label_encoders[column] = le
+joblib.dump(label_encoders, 'label_encoders.joblib')
 del column, label_encoders, le
 
 target = 'other_cancer'
@@ -52,7 +53,6 @@ def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_cl
 
     if return_clf:
         return clf
-    
 
 def random_forest(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
     if class_weight is None:
@@ -80,13 +80,6 @@ def model_results(y_pred, y_test, y_pred_proba):
     f1 = f1_score(y_test, y_pred, average='macro')
     print("F1 score:", f1)
 
-    report = classification_report(y_test, y_pred)
-    print(report)
-
-    cm = confusion_matrix(y_test, y_pred)
-    print("Confusion Matrix:")
-    print(cm)
-    
     roc_auc = roc_auc_score(y_test, y_pred_proba)
     print('ROC AUC score:', roc_auc)
 
@@ -96,14 +89,19 @@ def model_results(y_pred, y_test, y_pred_proba):
     precision = precision_score(y_test, y_pred)
     print('Precision:', precision)
 
+    report = classification_report(y_test, y_pred)
+    print(report)
+
+    cm = confusion_matrix(y_test, y_pred)
+    print("Confusion Matrix:")
+    print(cm)
+    
 def feature_importance(clf):
     importances = clf.feature_importances_
 
-    # Print the name and importance of each feature 
-    for feature_name, importance in zip(X.columns, importances):
+    # Print the name and importance of each feature
+    for feature_name, importance in sorted(zip(importances, X.columns), reverse=True):
         print(f"{feature_name}: {importance}")
-    #sort features by importance
-    sorted(zip(importances, X.columns), reverse=True)
 
     # Sort the feature importances in descending order
     indices = np.argsort(importances)[::-1]
@@ -126,63 +124,19 @@ def feature_importance(clf):
     # Show plot
     plt.show()
         
-
-# %% [markdown]
-# 
-
-# %%
-print("Decision Tree without class weighting")
-decision_tree(X_train, X_test, y_train, y_test)
-
-print("\nRandom Forest without class weighting")
-random_forest(X_train, X_test, y_train, y_test)
-
-# %%
-# from sklearn.tree import export_graphviz
-# import graphviz
-# import pydotplus
-
-# dot_data = export_graphviz(clf, out_file=None, feature_names=X.columns, filled=True, rounded=True, special_characters=True)
-# graph = pydotplus.graph_from_dot_data(dot_data)
-# graph.write_png('decision_tree.png')
-
-# %%
-# Calculate class weights
-class_weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-class_weights_dict = dict(enumerate(class_weights))
-
-print("Decision Tree with class weighting")
-decision_tree(X_train, X_test, y_train, y_test, class_weights_dict)
-
-print("\nRandom Forest without class weighting")
-random_forest(X_train, X_test, y_train, y_test, class_weights_dict)
-
 # %%
 # Undersample the majority class
 rus = RandomUnderSampler(random_state=42)
 X_resampled, y_resampled = rus.fit_resample(X_train, y_train)
 
-print("Decision Tree with Undersampling")
-decision_tree(X_resampled, X_test, y_resampled, y_test)
-
 print("\nRandom Forest with Undersampling")
-random_forest(X_resampled, X_test, y_resampled, y_test)
+clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)
+
+joblib.dump(clf, '../model/trained_undersampling_rf.joblib')
 
 # %%
-# Oversample the minority class
-ros = RandomOverSampler(random_state=42)
-X_resampled, y_resampled = ros.fit_resample(X_train, y_train)
-
-print("Decision Tree with Oversampling")
-decision_tree(X_resampled, X_test, y_resampled, y_test)
-
-print("\nRandom Forest with Oversampling")
-random_forest(X_resampled, X_test, y_resampled, y_test)
-
-# %%
-ratio = 4
+ratio = 2
 majority_sample_size = int(len(data[data[target]==1]) * ratio)
-# Downsample majority class to 50000 samples
 majority_downsampled = resample(data[data[target]==0],
                                 replace=False, # sample without replacement
                                 n_samples= majority_sample_size, # number of samples to downsample to
@@ -194,39 +148,50 @@ downsampled_data = pd.concat([majority_downsampled, data[data[target]==1]])
 # Shuffle the data
 downsampled_data = downsampled_data.sample(frac=1, random_state=42)
 
-X = downsampled_data.drop(target, axis=1)  # Features (all columns except the target)
-y = downsampled_data[target]  # Target variable
+X_downsampled = downsampled_data.drop(target, axis=1)  # Features (all columns except the target)
+y_downsampled = downsampled_data[target]  # Target variable
 
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_downsampled, y_downsampled, test_size=0.2, random_state=42)
 
 # Apply SMOTE to the training data
 smote = SMOTENC(random_state=42, categorical_features = cat_cols_idx)
 X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
 
-# %%
-# print("Decision Tree with SMOTENC")
-# clf = decision_tree(X_resampled, X_test, y_resampled, y_test, return_clf=True)
-# print ("Feature Importances:")
-# feature_importance(clf)
-
 print("\nRandom Forest with SMOTENC")
 clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)
+
+joblib.dump(clf, '../model/trained_smoteNC_rf.joblib')
+#%%
 print ("Feature Importances:")
 feature_importance(clf)
 
-# %%
-#USE F1 MACRO INSTEAD OF ACCURACY
-#RECALL
-#ROC AND AOC
-#more false positives than false negatives
-#more sensitivisity than specificity instead of false positives/negatives
+# %% Potential use of importance threshold
+# threshold = 0.1
+# important_features = []
+# for feature_name, importance in sorted(zip(clf.feature_importances_, X.columns), reverse=True):
+#     if importance > threshold:
+#         important_features.append(importance)
+# print(f"Important features: {important_features}")
 
 
+# %% Testing
+# #show prediction for a single patient
+# clf = joblib.load('trained_smoteNC_rf.joblib')
+# clf = joblib.load('trained_undersampling_rf.joblib')
+# print("Prediction for a single patient")
+# num = 4
+# patient = X_test.iloc[num]
+# #remove the target row
+# print(patient)
+# print("Actual value:", y_test.iloc[num])
+# print("Predicted value:", clf.predict([patient]))
+# print("Predicted probability:", clf.predict_proba([patient]))
+
+# #print values of patient as string
+# def format_series(series):
+#     formatted_values = ['"{}"'.format(value) for value in series]
+#     result_string = ', '.join(formatted_values)
+#     print(result_string)
+# format_series(patient)
 # %%
-#consider converting numerical to categorical via bins
-#random forest feature selection
-#one hot encoding
-#frequency encoding
-#chi square
-#try dividing data set by age

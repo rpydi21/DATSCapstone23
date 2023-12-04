@@ -1,7 +1,6 @@
 # %%
 import pandas as pd
 import numpy as np
-data_cleaned = pd.read_csv("../data/data_cleaned.csv")
 from sklearn.preprocessing import LabelEncoder
 from sklearn.neighbors import NearestNeighbors
 import math
@@ -24,12 +23,6 @@ def label_encoding(variable):
         
     return variable
 
-label_encoders = {}
-#select columns that are objects
-cat_columns = data_cleaned.select_dtypes(include=['object']).columns
-data_encoded = data_cleaned.apply(label_encoding)
-
-# %%
 def impute_column (col, indices, k_neighbors, X, y):
     nearest_neighbor_index = indices[0][0]
     while pd.isnull(data_imputed.iloc[nearest_neighbor_index][col.name]):
@@ -74,6 +67,13 @@ def impute_row (row, k_neighbors):
     row = row.squeeze()
     return row
 #%%
+data_cleaned = pd.read_csv("../data/data_cleaned.csv")
+
+label_encoders = {}
+#select columns that are objects
+cat_columns = data_cleaned.select_dtypes(include=['object']).columns
+data_encoded = data_cleaned.apply(label_encoding)
+
 data_imputed = data_encoded.copy()
 rows_with_missing = data_imputed[data_imputed.isnull().any(axis=1)]
 rows_with_missing = rows_with_missing.apply(impute_row, axis=1, k_neighbors = 1)

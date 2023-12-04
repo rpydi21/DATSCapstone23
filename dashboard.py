@@ -153,8 +153,8 @@ numerical_questions = [
 dropdown_options = [(id, question, choice) for id, question, choices in dropdown_questions for choice in choices]
 
 app.layout = html.Div([
-    html.H1("CancerGuard: Developing an Accurate Model for Predicting Individual Cancer Risk"),
-
+    html.H1("Machine Learning for non-Skin Cancer Assessment: Integrating Clinical, Socioeconomic, and Lifestyle Data"),
+    html.H2("By: Rohth Pydi"),
     # Dynamic creation of dropdowns based on the specified questions and choices
     *[html.Div([
         html.H3(question),
@@ -181,20 +181,20 @@ app.layout = html.Div([
 
     html.Hr(),  # Add a horizontal line
 
-    html.H2("Selected Answers DataFrame:"),
+    # html.H2("Selected Answers DataFrame:"),
 
-    dash_table.DataTable(
-        id='datatable',
-        columns=[{'name': col, 'id': col} for col in df_answers.columns],
-        data=df_answers.to_dict('records')
-    )
+    # dash_table.DataTable(
+    #     id='datatable',
+    #     columns=[{'name': col, 'id': col} for col in df_answers.columns],
+    #     data=df_answers.to_dict('records')
+    # )
 ])
 
 # Callback to update the output text and DataFrame based on the selected answers
 @app.callback(
-    [Output('output-text', 'children'), 
-     Output('datatable', 'data')],
-    # Output('output-text', 'children'),
+    # [Output('output-text', 'children'), 
+    #  Output('datatable', 'data')],
+    Output('output-text', 'children'),
     [Input('button', 'n_clicks')],
     [State(f'dropdown-{id.replace(" ", "-")}', 'value') for id, _, _ in dropdown_questions],
     [State(f'input-{id}', 'value') for id, _ in numerical_questions]
@@ -218,7 +218,7 @@ def update_output(n_clicks, *selected_answers):
                                                 ], ignore_index=True)
 
 
-            # Define the data for each column
+            # # Define the data for each column
             # data = {
             #     "ID": ["state", "health_insurance", "personal_physician", "doctor_visit_ability", "last_visit",
             #     "stroke", "skin_cancer", "copd", "depression", "kidney_disease", "diabetes", "employment",
@@ -233,7 +233,7 @@ def update_output(n_clicks, *selected_answers):
             #                   2, 30]
             # }
 
-            # Create the DataFrame
+            # # Create the DataFrame
             # df_answers = pd.DataFrame(data)
             
             #calculate bmi and append to df_answers
@@ -275,16 +275,31 @@ def update_output(n_clicks, *selected_answers):
                     df_answers_encoded[column] = le.transform(df_answers_encoded[column])
             
             patient = df_answers_encoded.iloc[0]
-            prediction1 = undersampling_rf.predict([patient])
-            prediction2 = smoteNC_rf.predict([patient])
-            prediction = 1 if prediction1 == 1 or prediction2 == 1 else 0
+            # prediction1 = undersampling_rf.predict([patient])
+            probability1 = undersampling_rf.predict_proba([patient])
             
-            if prediction == 0:
-                output_text = "You are not at risk for cancer."
+            # prediction2 = smoteNC_rf.predict([patient])
+            probability2 = smoteNC_rf.predict_proba([patient])
+            
+            probability_no = probability1[0][0] + probability2[0][0]
+            probability_yes = probability1[0][1] + probability2[0][1]
+            
+            probability = probability_yes / (probability_no + probability_yes)
+            
+            if probability_no > probability_yes:
+                output_text = "You are likely not at risk for cancer. Your probability of having cancer is " + str(round(probability * 100, 2)) + "%."
             else:
-                output_text = "You are at risk for cancer."
+                output_text = "You are likely at risk for cancer. Your probability of having cancer is " + str(round(probability * 100, 2)) + "%."
+
+            # # prediction = 1 if prediction1 == 1 or prediction2 == 1 else 0
+            
+            # if prediction == 0:
+            #     output_text = "You are not at risk for cancer."
+            # else:
+            #     output_text = "You are at risk for cancer."
             # Return updated output text and DataFrame data
-            return output_text, df_answers.to_dict('records')
+            return output_text
+            # , df_answers.to_dict('records')
         else:
             return "Please provide an answer for each question before clicking the button.", df_answers.to_dict('records')
 

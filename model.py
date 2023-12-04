@@ -134,6 +134,8 @@ clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)
 
 joblib.dump(clf, '../model/trained_undersampling_rf.joblib')
 
+print ("Feature Importances:")
+feature_importance(clf)
 # %%
 ratio = 2
 majority_sample_size = int(len(data[data[target]==1]) * ratio)

@@ -154,7 +154,7 @@ dropdown_options = [(id, question, choice) for id, question, choices in dropdown
 
 app.layout = html.Div([
     html.H1("Machine Learning for non-Skin Cancer Assessment: Integrating Clinical, Socioeconomic, and Lifestyle Data"),
-    html.H2("By: Rohth Pydi"),
+    html.H2("By: Rohith Pydi"),
     # Dynamic creation of dropdowns based on the specified questions and choices
     *[html.Div([
         html.H3(question),
@@ -280,23 +280,15 @@ def update_output(n_clicks, *selected_answers):
             
             # prediction2 = smoteNC_rf.predict([patient])
             probability2 = smoteNC_rf.predict_proba([patient])
-            
-            probability_no = probability1[0][0] + probability2[0][0]
-            probability_yes = probability1[0][1] + probability2[0][1]
-            
-            probability = probability_yes / (probability_no + probability_yes)
-            
-            if probability_no > probability_yes:
-                output_text = "You are likely not at risk for cancer. Your probability of having cancer is " + str(round(probability * 100, 2)) + "%."
-            else:
-                output_text = "You are likely at risk for cancer. Your probability of having cancer is " + str(round(probability * 100, 2)) + "%."
 
-            # # prediction = 1 if prediction1 == 1 or prediction2 == 1 else 0
+            probability = (probability1 + probability2) / 2.0
+            prediction = probability.argmax(axis=1)
             
-            # if prediction == 0:
-            #     output_text = "You are not at risk for cancer."
-            # else:
-            #     output_text = "You are at risk for cancer."
+            if prediction == 0:
+                output_text = "You are likely not at risk for cancer. Your probability of having cancer is " + str(round(probability[0][1] * 100, 2)) + "%."
+            else:
+                output_text = "You are likely at risk for cancer. Your probability of having cancer is " + str(round(probability[0][1] * 100, 2)) + "%."
+            
             # Return updated output text and DataFrame data
             return output_text
             # , df_answers.to_dict('records')

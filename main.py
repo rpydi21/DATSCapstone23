@@ -64,6 +64,8 @@ def bivariate_analysis(variable):
     plt.show()
 #%%
 data_imputed = pd.read_csv("../data/data_imputed.csv")
+data_imputed = data_imputed[data_imputed.other_cancer != "Don't know / Not Sure / Refused / Missing"]
+univariate_analysis(data_imputed["other_cancer"])
 plots = data_imputed.apply(univariate_analysis)
 plots = data_imputed.apply(bivariate_analysis)
 

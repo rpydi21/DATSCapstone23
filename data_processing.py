@@ -352,3 +352,8 @@ data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
 #export cleaned data to csv
 data_cleaned.to_csv("../data/data_cleaned.csv", index=False)
 # %%
+#count the number of na values in each column
+data_cleaned.isna().sum()
+
+#mode of bmi column
+data_cleaned["bmi"].mode()

@@ -18,9 +18,6 @@ data = pd.read_csv("../data/data_imputed_R3.csv")
 #drop values where other_cancer is equal to don't know
 data = data[data.other_cancer != "Don't know / Not Sure / Refused / Missing"]
 
-#unique values of mammogram column
-print(data.mammogram.unique())
-
 #get index of categorical features
 cat_cols = data.select_dtypes(include='object').columns
 cat_cols_idx = [col in cat_cols for col in data.columns]
@@ -68,7 +65,7 @@ def model_results(y_pred, y_test, y_pred_proba):
     print('ROC AUC score:', roc_auc)
 
     sensitivity = recall_score(y_test, y_pred)
-    print('Sensitivity:', sensitivity)  
+    print('Sensitivity:', sensitivity)
 
     precision = precision_score(y_test, y_pred)
     print('Precision:', precision)
@@ -86,17 +83,19 @@ def model_results(y_pred, y_test, y_pred_proba):
     print(f'False Positives: {fp}')
     print(f'False Negatives: {fn}')
 
+    cm = np.flip(cm, axis=0)
+    cm = np.flip(cm, axis=1)
     #create heatmap for confusion matrix
     plt.figure(figsize=(9,9))
-    sns.heatmap(cm, annot=True, fmt=".3f", linewidths=.5, square = True, cmap = 'flare')
-    plt.ylabel('Actual label')
-    plt.xlabel('Predicted label')
+    sns.heatmap(cm, annot=True, fmt=".3f", linewidths=.5, square = True, cmap = 'flare', annot_kws={"size": 20});
+    plt.ylabel('Actual label', fontsize = 20)
+    plt.xlabel('Predicted label', fontsize = 20)
     #change x-axis labels to be more readable
-    plt.xticks([0.5, 1.5], ['No', 'Yes'])
+    plt.xticks([0.5, 1.5], ['Yes', 'No'], fontsize = 20)
     #change y-axis labels to be more readable
-    plt.yticks([0.5, 1.5], ['No', 'Yes'])
-    all_sample_title = 'Recall Score: {0}'.format(sensitivity)
-    plt.title(all_sample_title, size = 15)
+    plt.yticks([0.5, 1.5], ['Yes', 'No'], fontsize = 20)
+    all_sample_title = 'Recall Score: {0:.4f}'.format(sensitivity)
+    plt.title(all_sample_title, size = 25)
     plt.show()
     
 def feature_importance(clf):
@@ -127,23 +126,47 @@ def feature_importance(clf):
     # Show plot
     plt.show()
 
+    # Get the indices of the top 5 features
+    indices = np.argsort(importances)[-5:]
+
+    # Get the names of the top 5 features
+    features = X_train.columns[indices]
+
+    # Get the values of the top 5 features
+    values = importances[indices]
+
+    # Create a DataFrame with features and values
+    df = pd.DataFrame({'features': features, 'values': values})
+
+    # Repeat the first value to close the circular graph
+    df = pd.concat([df, pd.DataFrame({'features': [features[0]], 'values': [values[0]]})])
+
+    # Convert DataFrame to long format
+    df = pd.melt(df, id_vars=['features'], value_vars=['values'])
+
+    # Create radar chart
+    plt.figure(figsize=(6, 6))
+    plt.polar(df['features'], df['value'])
+    plt.fill(df['features'], df['value'], alpha=0.1)
+    plt.show()
+
 #%%
-def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
-    if class_weight is None:
-        clf = DecisionTreeClassifier()
-    else:
-        clf = DecisionTreeClassifier(class_weight=class_weight)
-    # Train the model
-    clf.fit(X_train, y_train)
+# def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
+#     if class_weight is None:
+#         clf = DecisionTreeClassifier()
+#     else:
+#         clf = DecisionTreeClassifier(class_weight=class_weight)
+#     # Train the model
+#     clf.fit(X_train, y_train)
 
-    # Make predictions
-    y_pred = clf.predict(X_test)
-    y_pred_proba = clf.predict_proba(X_test)[:, 1]
+#     # Make predictions
+#     y_pred = clf.predict(X_test)
+#     y_pred_proba = clf.predict_proba(X_test)[:, 1]
 
-    model_results(y_pred, y_test, y_pred_proba)
+#     model_results(y_pred, y_test, y_pred_proba)
 
-    if return_clf:
-        return clf
+#     if return_clf:
+#         return clf
 # %%
 # Undersample the majority class
 rus = RandomUnderSampler(random_state=42)

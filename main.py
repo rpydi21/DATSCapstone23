@@ -31,7 +31,7 @@ def univariate_analysis(variable):
             ax.set(xlabel=None)
     else:
         fig, ax = plt.subplots(figsize=(13, 6))
-        ax.set_title(variable.name)
+        ax.set_title(variable.name, fontsize = 20)
         ax.set(xlabel=None)
         ax = sns.countplot(variable, x = variable.values)
         labels = [textwrap.fill(label.get_text(), 10, break_long_words=False) for label in ax.get_xticklabels()]
@@ -39,7 +39,10 @@ def univariate_analysis(variable):
         if variable.name == "state":
             ax.set_xticklabels(labels, rotation=45, fontsize = 6)
         else:
-            ax.set_xticklabels(labels)
+            ax.set_xticklabels(labels, fontsize = 15)
+        ax.tick_params(axis='y', labelsize=15)
+        ax.set_ylabel("Count", fontsize = 20)
+        
     plt.show()
 
 def bivariate_analysis(variable):
@@ -63,7 +66,7 @@ def bivariate_analysis(variable):
             ax.set_xticklabels(labels)
     plt.show()
 #%%
-data_imputed = pd.read_csv("../data/data_imputed.csv")
+data_imputed = pd.read_csv("../data/data_imputed_R3.csv")
 data_imputed = data_imputed[data_imputed.other_cancer != "Don't know / Not Sure / Refused / Missing"]
 univariate_analysis(data_imputed["other_cancer"])
 plots = data_imputed.apply(univariate_analysis)

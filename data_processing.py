@@ -261,6 +261,18 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 #if age is less than 45, value for sigmoidoscopy is "Age Less than 45"
 data_cleaned.loc[data_cleaned["age"] < 6, "sigmoidoscopy"] = "Age Less than 45"
 
+
+variable_name = "mammogram"
+replace_dict = {
+    1: "Yes",
+    2: "No",
+    9: "Don't know / Not Sure / Refused / Missing"
+}
+data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
+
+#if sex is male or age is less than 40, set mammogram value to "Not applicable: Male or Age Less than 40"
+data_cleaned.loc[(data_cleaned['sex'] == 'Male') | (data_cleaned['age'] < 5), 'mammogram'] = 'Not applicable: Female Aged Less than 40 or Male'
+
 variable_name = "age"
 replace_dict = {
     1: "18 to 24",
@@ -282,8 +294,6 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
 variable_name = "bmi"
 data_cleaned[variable_name] = data_cleaned[variable_name]/100
-#fill na values with median bmi
-data_cleaned[variable_name] = data_cleaned[variable_name].fillna(data_cleaned[variable_name].median())
 
 variable_name = "education"
 replace_dict = {
@@ -305,14 +315,6 @@ replace_dict = {
     5: "$50,000 to < $100,000",
     6: "$100,000 to < $200,000",
     7: "$200,000 or more",
-    9: "Don't know / Not Sure / Refused / Missing"
-}
-data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
-
-variable_name = "mammogram"
-replace_dict = {
-    1: "Yes",
-    2: "No",
     9: "Don't know / Not Sure / Refused / Missing"
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
@@ -344,16 +346,52 @@ data_cleaned.loc[data_cleaned["days_alcohol_consumed"] == np.nan, "avg_drink_con
 
 data_cleaned['drinks_consumed_last_30_days'] = data_cleaned["days_alcohol_consumed"] * (data_cleaned["avg_drink_consumed"])
 data_cleaned = data_cleaned.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
-#fill na values with median drinks consumed
-data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_last_30_days'].fillna(data_cleaned['drinks_consumed_last_30_days'].median())
 
 data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
-
+#%%
 #export cleaned data to csv
 data_cleaned.to_csv("../data/data_cleaned.csv", index=False)
-# %%
-#count the number of na values in each column
-data_cleaned.isna().sum()
 
-#mode of bmi column
-data_cleaned["bmi"].mode()
+#%%
+#load iterative imputer
+from fancyimpute import IterativeImputer
+# Create an IterativeImputer
+imputer = IterativeImputer()
+
+# Impute missing values
+imputed_data = imputer.fit_transform(data_cleaned)
+
+# Convert back to a DataFrame (optional)
+imputed_df = pd.DataFrame(imputed_data, columns=data.columns)
+# %%
+# #count the number of na values in each column
+# data_cleaned.isna().sum()
+
+# #mode of bmi column
+# data_cleaned["bmi"].mode()
+
+# #count number of missing values in bmi
+# data_cleaned.isna().sum()
+
+# #get rows with missing bmi
+# data_bmi_missing = data_cleaned[data_cleaned["bmi"].isna()]
+
+# #get rows with same index as those in data_bmi_missing
+# data_bmi_changed = data_cleaned.loc[data_bmi_missing.index]
+
+# data_cleaned = pd.read_csv("../data/data_cleaned.csv")
+# data_cleaned.isna().sum()
+
+#fill na values with median drinks consumed
+# data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_last_30_days'].fillna(data_cleaned['drinks_consumed_last_30_days'].median())
+
+# from sklearn.experimental import enable_iterative_imputer
+# from sklearn.impute import IterativeImputer
+# imputer = IterativeImputer(random_state=0, max_iter = 10)
+# imputer.fit(data_cleaned[['bmi']])
+# data_cleaned[['bmi']] = imputer.transform(data_cleaned[['bmi']]).round(2)
+
+
+
+# #fill na values with median bmi
+# data_cleaned[variable_name] = data_cleaned[variable_name].fillna(data_cleaned[variable_name].median())

@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score, recall_score, precision_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score, recall_score, precision_score, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight, resample
 from imblearn.under_sampling import RandomUnderSampler
@@ -12,10 +12,14 @@ from imblearn.over_sampling import RandomOverSampler
 from sklearn.ensemble import RandomForestClassifier
 from imblearn.over_sampling import SMOTENC
 import joblib
-
-data = pd.read_csv("../data/data_imputed.csv")
+import seaborn as sns
+#%%
+data = pd.read_csv("../data/data_imputed_R3.csv")
 #drop values where other_cancer is equal to don't know
 data = data[data.other_cancer != "Don't know / Not Sure / Refused / Missing"]
+
+#unique values of mammogram column
+print(data.mammogram.unique())
 
 #get index of categorical features
 cat_cols = data.select_dtypes(include='object').columns
@@ -37,28 +41,8 @@ y = data[target]  # Target variable
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # %%
-def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
-    if class_weight is None:
-        clf = DecisionTreeClassifier()
-    else:
-        clf = DecisionTreeClassifier(class_weight=class_weight)
-    # Train the model
-    clf.fit(X_train, y_train)
-
-    # Make predictions
-    y_pred = clf.predict(X_test)
-    y_pred_proba = clf.predict_proba(X_test)[:, 1]
-
-    model_results(y_pred, y_test, y_pred_proba)
-
-    if return_clf:
-        return clf
-
-def random_forest(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
-    if class_weight is None:
-        clf = RandomForestClassifier(n_estimators=100, random_state=42)
-    else:
-        clf = RandomForestClassifier(n_estimators=100, random_state=42, class_weight=class_weight)
+def random_forest(X_train, X_test, y_train, y_test, return_clf = False):
+    clf = RandomForestClassifier(n_estimators=100, random_state=42)
 
     # Train the model
     clf.fit(X_train, y_train)
@@ -95,6 +79,25 @@ def model_results(y_pred, y_test, y_pred_proba):
     cm = confusion_matrix(y_test, y_pred)
     print("Confusion Matrix:")
     print(cm)
+
+    tn, fp, fn, tp = cm.ravel()
+    print(f'True Positives: {tp}')
+    print(f'True Negatives: {tn}')
+    print(f'False Positives: {fp}')
+    print(f'False Negatives: {fn}')
+
+    #create heatmap for confusion matrix
+    plt.figure(figsize=(9,9))
+    sns.heatmap(cm, annot=True, fmt=".3f", linewidths=.5, square = True, cmap = 'flare')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    #change x-axis labels to be more readable
+    plt.xticks([0.5, 1.5], ['No', 'Yes'])
+    #change y-axis labels to be more readable
+    plt.yticks([0.5, 1.5], ['No', 'Yes'])
+    all_sample_title = 'Recall Score: {0}'.format(sensitivity)
+    plt.title(all_sample_title, size = 15)
+    plt.show()
     
 def feature_importance(clf):
     importances = clf.feature_importances_
@@ -123,48 +126,74 @@ def feature_importance(clf):
 
     # Show plot
     plt.show()
-        
+
+#%%
+def decision_tree(X_train, X_test, y_train, y_test, class_weight=None, return_clf = False):
+    if class_weight is None:
+        clf = DecisionTreeClassifier()
+    else:
+        clf = DecisionTreeClassifier(class_weight=class_weight)
+    # Train the model
+    clf.fit(X_train, y_train)
+
+    # Make predictions
+    y_pred = clf.predict(X_test)
+    y_pred_proba = clf.predict_proba(X_test)[:, 1]
+
+    model_results(y_pred, y_test, y_pred_proba)
+
+    if return_clf:
+        return clf
 # %%
 # Undersample the majority class
 rus = RandomUnderSampler(random_state=42)
-X_resampled, y_resampled = rus.fit_resample(X_train, y_train)
+X_train_resampled, y_train_resampled = rus.fit_resample(X_train, y_train)
+
+# print("Decision Tree with Undersampling")
+# decision_tree(X_train_resampled, X_test, y_train_resampled, y_test)
 
 print("\nRandom Forest with Undersampling")
-clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)
+clf = random_forest(X_train_resampled, X_test, y_train_resampled, y_test, return_clf=True)
 
 joblib.dump(clf, '../model/trained_undersampling_rf.joblib')
 
 print ("Feature Importances:")
 feature_importance(clf)
 # %%
-ratio = 2
-majority_sample_size = int(len(data[data[target]==1]) * ratio)
-majority_downsampled = resample(data[data[target]==0],
-                                replace=False, # sample without replacement
-                                n_samples= majority_sample_size, # number of samples to downsample to
-                                random_state=42) # reproducible results
+# ratio = 2
+# minority_class = X_train[y_train==1]
+# majority_downsampled = resample(X_train[y_train==0],
+#                                 replace=False, # sample without replacement
+#                                 n_samples= int(len(minority_class) * ratio), # number of samples to downsample to
+#                                 random_state=42) # reproducible results
 
-# Combine minority class and downsampled majority class
-downsampled_data = pd.concat([majority_downsampled, data[data[target]==1]])
+# # Combine minority class and downsampled majority class
+# X_train_downsampled = pd.concat([majority_downsampled, minority_class])
 
-# Shuffle the data
-downsampled_data = downsampled_data.sample(frac=1, random_state=42)
+# # Shuffle the data
+# X_train_downsampled = X_train_downsampled.sample(frac=1, random_state=42)
 
-X_downsampled = downsampled_data.drop(target, axis=1)  # Features (all columns except the target)
-y_downsampled = downsampled_data[target]  # Target variable
+# y_train_downsampled = y_train.loc[X_train_downsampled.index]
+# # Apply SMOTE to the downsampled training data
+# smote = SMOTENC(random_state=42, categorical_features = cat_cols_idx)
+# X_train_resampled, y_train_resampled = smote.fit_resample(X_train_downsampled, y_train_downsampled)
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_downsampled, y_downsampled, test_size=0.2, random_state=42)
+# #export to csv
+# X_train_resampled.to_csv("../data/X_train_resampled.csv", index=False)
+# y_train_resampled.to_csv("../data/y_train_resampled.csv", index=False)
 
-# Apply SMOTE to the training data
-smote = SMOTENC(random_state=42, categorical_features = cat_cols_idx)
-X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+# #Load from csv
+X_train_resampled = pd.read_csv("../data/X_train_resampled.csv")
+y_train_resampled = pd.read_csv("../data/y_train_resampled.csv")
 
 print("\nRandom Forest with SMOTENC")
-clf = random_forest(X_resampled, X_test, y_resampled, y_test, return_clf=True)
+clf = random_forest(X_train_resampled, X_test, y_train_resampled, y_test, return_clf=True)
+
+# print("Decision Tree with SMOTENC")
+# decision_tree(X_train_resampled, X_test, y_train_resampled, y_test, return_clf=True)
 
 joblib.dump(clf, '../model/trained_smoteNC_rf.joblib')
-#%%
+
 print ("Feature Importances:")
 feature_importance(clf)
 
@@ -196,4 +225,29 @@ feature_importance(clf)
 #     result_string = ', '.join(formatted_values)
 #     print(result_string)
 # format_series(patient)
-# %%
+
+#%%
+# print("Decision Tree without class weighting")
+# decision_tree(X_train, X_test, y_train, y_test)
+
+# print("\nRandom Forest without class weighting")
+# random_forest(X_train, X_test, y_train, y_test)
+
+# # Calculate class weights
+# class_weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+# class_weights_dict = dict(enumerate(class_weights))
+
+# print("Decision Tree with class weighting")
+# decision_tree(X_train, X_test, y_train, y_test, class_weights_dict)
+
+# print("\nRandom Forest with class weighting")
+# random_forest(X_train, X_test, y_train, y_test, class_weights_dict)
+
+# ros = RandomOverSampler(random_state=42)
+# X_resampled, y_resampled = ros.fit_resample(X_train, y_train)
+
+# print("Decision Tree with Oversampling")
+# decision_tree(X_resampled, X_test, y_resampled, y_test)
+
+# print("\nRandom Forest with Oversampling")
+# random_forest(X_resampled, X_test, y_resampled, y_test)

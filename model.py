@@ -85,9 +85,26 @@ def model_results(y_pred, y_test, y_pred_proba):
 
     cm = np.flip(cm, axis=0)
     cm = np.flip(cm, axis=1)
+    cm_copy = cm.copy()
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     #create heatmap for confusion matrix
     plt.figure(figsize=(9,9))
-    sns.heatmap(cm, annot=True, fmt=".3f", linewidths=.5, square = True, cmap = 'flare', annot_kws={"size": 20});
+    sns.heatmap(cm, annot=True, fmt=".3f", linewidths=.5, square = True, cmap = 'flare', annot_kws={"size": 20})
+
+    #add text for raw count
+    #combine "Raw Count: with the actual number"
+    labels = (np.asarray(["{0:.0f}\n".format(value) for value in cm_copy.flatten()]))
+    #reshape label as per the confusion matrix dimensions
+    labels = labels.reshape(2,2)
+    #add label to each cell
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            if cm[i][j] > 0.27:
+                text_color = "white"
+            else:
+                text_color = "black"
+            plt.annotate("Raw Count: " + labels[i][j], xy=(j+0.5, i+0.64), horizontalalignment='center', verticalalignment='center', size = 17, color = text_color)
+
     plt.ylabel('Actual label', fontsize = 20)
     plt.xlabel('Predicted label', fontsize = 20)
     #change x-axis labels to be more readable

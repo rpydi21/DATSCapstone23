@@ -293,25 +293,25 @@ def update_output(n_clicks, *selected_answers):
 
 
             # # Define the data for each column
-            data = {
-                "ID": ["state", "health_insurance", "personal_physician", "doctor_visit_ability", "last_visit",
-                "stroke", "skin_cancer", "copd", "depression", "kidney_disease", "diabetes", "employment",
-                "pneumonia_shot", "hiv_risk", "metropolitan_status", "health_status", "physical activity",
-                "chd", "asthma", "arthritis", "race", "sex", "colonoscopy", "sigmoidoscopy", "age",
-                "education", "income", "smoking", "height", "weight", "days_alc", "drinks_alc"],
-                "Answer": ["Pennsylvania", "Purchased through employer", "Yes, only one", "Could see doctor all times", 
-                           "Within past year", "No", "No", "No", "Yes", "No", "No", "Employed for wages", "No", "No",
-                             "Metropolitan counties", "Very Good", "Had physical activity", "No", "Never", "Not diagnosed", 
-                             "White only, non-Hispanic", "Male", "Age Less than 45", "Age Less than 45", "35 to 39",  
-                             "Graduated from College or Technical School", "$50,000 to < $100,000", "Former smoker", "70", "206.6",
-                              2, 30]
-            }
+            # data = {
+            #     "ID": ["state", "health_insurance", "personal_physician", "doctor_visit_ability", "last_visit",
+            #     "stroke", "skin_cancer", "copd", "depression", "kidney_disease", "diabetes", "employment",
+            #     "pneumonia_shot", "hiv_risk", "metropolitan_status", "health_status", "physical activity",
+            #     "chd", "asthma", "arthritis", "race", "sex", "colonoscopy", "sigmoidoscopy", "age",
+            #     "education", "income", "smoking", "height", "weight", "days_alc", "drinks_alc"],
+            #     "Answer": ["Pennsylvania", "Purchased through employer", "Yes, only one", "Could see doctor all times", 
+            #                "Within past year", "No", "No", "No", "Yes", "No", "No", "Employed for wages", "No", "No",
+            #                  "Metropolitan counties", "Very Good", "Had physical activity", "No", "Never", "Not diagnosed", 
+            #                  "White only, non-Hispanic", "Male", "Age Less than 45", "Age Less than 45", "35 to 39",  
+            #                  "Graduated from College or Technical School", "$50,000 to < $100,000", "Former smoker", "70", "206.6",
+            #                   2, 30]
+            # }
 
-            # # Create the DataFrame
-            df_answers = pd.DataFrame(data)
+            # # # Create the DataFrame
+            # df_answers = pd.DataFrame(data)
 
-            #convert string to float
-            df_answers['Answer'] = df_answers['Answer'].astype(float)
+            # #convert string to float
+            # df_answers['Answer'] = df_answers['Answer'].astype(float)
 
             
             #calculate bmi and append to df_answers

@@ -6,10 +6,13 @@ def clean_alcohol (value):
     return int(str(value)[1:3]) * 4 if str(value)[0] == "1" else int(str(value)[1:3]) if str(value)[0] == "2" else value
 
 #%%
-data = pd.read_csv("../data/data.csv")
+#read data from XPT file
+file_path = '../data/LLCP2022.XPT '
+data = pd.read_sas(file_path, format='xport')
+#%%
 data_cleaned = data[["_STATE", "DISPCODE", "PRIMINSR", "PERSDOC3",
             "MEDCOST1", "CHECKUP1", "CVDSTRK3", "CHCSCNC1", "CHCOCNC1", "CHCCOPD3", "ADDEPEV3",
-            "CHCKDNY2", "DIABETE4", "EMPLOY1", "PNEUVAC4", "HIVRISK5", "HPVADVC4", "SHINGLE2",
+            "CHCKDNY2", "DIABETE4", "EMPLOY1", "PNEUVAC4", "HIVRISK5",
             "_METSTAT", "GENHLTH", "_TOTINDA", "_MICHD", "_ASTHMS1", "_DRDXAR2", "_RACEPR1",
             "_SEX", "_HADCOLN", "_HADSIGM", "_AGEG5YR", "_BMI5", "_EDUCAG", "_INCOMG1", 
             "_RFMAM22", "_SMOKER3", "ALCDAY4", "AVEDRNK3"]]
@@ -21,8 +24,8 @@ data_cleaned = data_cleaned.rename(columns = {"_STATE": "state",
         "CVDSTRK3" : "stroke", "CHCSCNC1" : "skin_cancer", "CHCOCNC1" : "other_cancer",
         "CHCCOPD3" : "copd" , "ADDEPEV3" : "depression", "CHCKDNY2" : "kidney_disease",
         "DIABETE4" : "diabetes", "EMPLOY1" : "employment", "PNEUVAC4" : "pneumonia_shot",
-        "HIVRISK5" : "hiv_risk", "HPVADVC4" : "hpv_shot", "SHINGLE2" : "shingles_shot",
-        "_METSTAT" : "metropolitan_status", "GENHLTH" : "health_status", "_TOTINDA" : "physical activity",
+        "HIVRISK5" : "hiv_risk", "_METSTAT" : "metropolitan_status", 
+        "GENHLTH" : "health_status", "_TOTINDA" : "physical_activity",
         "_MICHD" : "chd", "_ASTHMS1" : "asthma", "_DRDXAR2" : "arthritis",
         "_RACEPR1" : "race", "_SEX" : "sex", "_HADCOLN" : "colonoscopy", "_HADSIGM" : "sigmoidoscopy",
         "_AGEG5YR" : "age", "_BMI5" : "bmi", "_EDUCAG" : "education", "_INCOMG1" : "income",
@@ -112,6 +115,8 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
 variable_name = "other_cancer"
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
+#remove rows where other_cancer is "Don't know / Not Sure / Refused / Missing"
+data_cleaned = data_cleaned[data_cleaned.other_cancer != "Don't know / Not Sure / Refused / Missing"]
 
 variable_name ="copd"
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
@@ -159,25 +164,6 @@ data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 variable_name = "hiv_risk"
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
-variable_name = "hpv_shot"
-replace_dict = {
-    1: "Yes",
-    2: "No",
-    3: "Doctor refused when asked",
-    7: "Don't know / Not Sure / Refused / Missing",
-    9: "Don't know / Not Sure / Refused / Missing"
-}
-data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
-
-variable_name = "shingles_shot"
-replace_dict = {
-    1: "Yes",
-    2: "No",
-    7: "Don't know / Not Sure / Refused / Missing",
-    9: "Don't know / Not Sure / Refused / Missing"
-}
-data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
-
 variable_name = "metropolitan_status"
 replace_dict = {
     1: "Metropolitan counties",
@@ -197,7 +183,7 @@ replace_dict = {
 }
 data_cleaned[variable_name] = data_cleaned[variable_name].map(replace_dict)
 
-variable_name = "physical activity"
+variable_name = "physical_activity"
 replace_dict = {
     1: "Had physical activity",
     2: "No physical activity in last 30 days",
@@ -346,52 +332,6 @@ data_cleaned.loc[data_cleaned["days_alcohol_consumed"] == np.nan, "avg_drink_con
 
 data_cleaned['drinks_consumed_last_30_days'] = data_cleaned["days_alcohol_consumed"] * (data_cleaned["avg_drink_consumed"])
 data_cleaned = data_cleaned.drop(["days_alcohol_consumed", "avg_drink_consumed"], axis = 1)
-
-data_cleaned = data_cleaned.dropna(thresh = 0.8 * len(data_cleaned), axis = 1)
 #%%
 #export cleaned data to csv
 data_cleaned.to_csv("../data/data_cleaned.csv", index=False)
-
-#%%
-#load iterative imputer
-from fancyimpute import IterativeImputer
-# Create an IterativeImputer
-imputer = IterativeImputer()
-
-# Impute missing values
-imputed_data = imputer.fit_transform(data_cleaned)
-
-# Convert back to a DataFrame (optional)
-imputed_df = pd.DataFrame(imputed_data, columns=data.columns)
-# %%
-# #count the number of na values in each column
-# data_cleaned.isna().sum()
-
-# #mode of bmi column
-# data_cleaned["bmi"].mode()
-
-# #count number of missing values in bmi
-# data_cleaned.isna().sum()
-
-# #get rows with missing bmi
-# data_bmi_missing = data_cleaned[data_cleaned["bmi"].isna()]
-
-# #get rows with same index as those in data_bmi_missing
-# data_bmi_changed = data_cleaned.loc[data_bmi_missing.index]
-
-# data_cleaned = pd.read_csv("../data/data_cleaned.csv")
-# data_cleaned.isna().sum()
-
-#fill na values with median drinks consumed
-# data_cleaned['drinks_consumed_last_30_days'] = data_cleaned['drinks_consumed_last_30_days'].fillna(data_cleaned['drinks_consumed_last_30_days'].median())
-
-# from sklearn.experimental import enable_iterative_imputer
-# from sklearn.impute import IterativeImputer
-# imputer = IterativeImputer(random_state=0, max_iter = 10)
-# imputer.fit(data_cleaned[['bmi']])
-# data_cleaned[['bmi']] = imputer.transform(data_cleaned[['bmi']]).round(2)
-
-
-
-# #fill na values with median bmi
-# data_cleaned[variable_name] = data_cleaned[variable_name].fillna(data_cleaned[variable_name].median())

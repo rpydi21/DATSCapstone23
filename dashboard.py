@@ -1,3 +1,4 @@
+#%%
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
@@ -19,7 +20,7 @@ order_list = pd.DataFrame(
        'doctor_visit_ability', 'last_visit', 'stroke', 'skin_cancer', 
        'copd', 'depression', 'kidney_disease', 'diabetes',
        'employment', 'pneumonia_shot', 'hiv_risk', 'metropolitan_status',
-       'health_status', 'physical.activity', 'chd', 'asthma', 'arthritis',
+       'health_status', 'physical_activity', 'chd', 'asthma', 'arthritis',
        'race', 'sex', 'colonoscopy', 'sigmoidoscopy', 'age', 'bmi',
        'education', 'income', 'mammogram', 'smoking',
        'drinks_consumed_last_30_days'], columns=['ID']
@@ -39,7 +40,7 @@ dropdown_demographic = [
         'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Guam', 'Puerto Rico',
         'Virgin Islands'
     ]),
-    ("sex", "What is your sex", [
+    ("sex", "What is your sex?", [
         'Female', 'Male'
     ]),
     ("age", "What is your age?", [
@@ -57,12 +58,12 @@ dropdown_demographic = [
 ]
 dropdown_socioeconomic = [
     ("education", "What is your highest level of education completed?", [
-        'Graduated from College or Technical School', 'Graduated High School',
-        'Attended College or Technical School', 'Did not graduate High School',
+        'Did not graduate High School', 'Graduated High School',
+        'Attended College or Technical School', 'Graduated from  College or Technical School',
         "Don't know / Not Sure / Refused / Missing"
     ]),
     ("employment", "Are you currently _______________?", [
-        'Retired', 'Self-employed', 'A homemaker', 'Employed for wages',
+        'Employed for wages', 'Self-employed', 'Retired', 'A homemaker', 
         'Unable to work', 'Unemployed: less than 1 year', 'Unemployed: 1 year or more',
         'A student', 'Refused'
     ]),
@@ -88,7 +89,6 @@ dropdown_socioeconomic = [
         'Could see doctor all times', 'Could not see doctor 1+ times', "Don't know / Not Sure / Refused / Missing"
     ]),
 ]
-
 dropdown_life_style = [
     ("last_visit", "About how long has it been since you last visited a doctor for a routine checkup?", [
         'Within past year', 'Within 1 and 2 years', 'Within 2 and 5 years', '5 or more years ago', 'Never', "Don't know / Not Sure / Refused / Missing"
@@ -96,18 +96,18 @@ dropdown_life_style = [
     ("pneumonia_shot", "Have you ever had a pneumonia shot also known as a pneumococcal vaccine?", [
         'No', 'Yes', "Don't know / Not Sure / Refused / Missing"
     ]),
-    ("physical activity", "Did you do any physical activity or exercise during the past 30 days other than your regular job?", [
+    ("physical_activity", "Did you do any physical activity or exercise during the past 30 days other than your regular job?", [
         'No physical activity in last 30 days', 'Had physical activity', "Don't know / Not Sure / Refused / Missing"
     ]),
     ("smoking", "What is your smoking status?", [
-        'Never smoked', 'Current occasional smoker', 'Former smoker',
-        'Current everyday smoker', "Don't know / Not Sure / Refused / Missing"
+        'Never smoked', 'Current occasional smoker', 'Current everyday smoker', 'Former smoker',
+         "Don't know / Not Sure / Refused / Missing"
     ]),
     ("hiv_risk", "Do any of the following situations apply to you? You do not need to respond to which one. You have injected any drug other than those prescribed for you in the past year. You have been treated for a sexually transmitted disease or STD in the past year.  You have given or received money or drugs in exchange for sex in the past year.", [
         'No', 'Yes', "Don't know / Not Sure / Refused / Missing"
     ]),
     ("mammogram", "Have you had a mammogram in the past two years? If male or under the age of 40, please respond with 'Not applicable: Female Aged Less than 40 or Male'",
-      ['Yes', 'No', 'Not applicable: Female Aged Less than 40 or Male', 
+      ['No', 'Yes', 'Not applicable: Female Aged Less than 40 or Male', 
         "Don't know / Not Sure / Refused / Missing"]),
     ("colonoscopy", "Have you ever had a colonoscopy? If under 45, respond with ‘Age Less than 45’.", [
         'No', 'Yes', 'Age Less than 45'
@@ -116,10 +116,9 @@ dropdown_life_style = [
         'No', 'Yes', 'Age Less than 45'
     ]),
 ]
-
 dropdown_medical = [
     ("health_status", "Would you say that in general your health is:", [
-        'Very Good', 'Excellent', 'Fair', 'Poor', 'Good', "Don't know / Not Sure / Refused / Missing"
+        'Excellent', 'Very Good', 'Good', 'Fair', 'Poor',  "Don't know / Not Sure / Refused / Missing"
     ]),
     ("skin_cancer", "Have you ever been told you had skin cancer that is not melanoma?", [
         'No', 'Yes', "Don't know / Not Sure / Refused / Missing"
@@ -150,17 +149,15 @@ dropdown_medical = [
         'No', 'Yes', "Don't know / Not Sure / Refused / Missing"
     ]),
 ]
-
 numerical_demographic = [
     ("height", "What is your height (in inches)?"),
     ("weight", "What is your weight (in lbs)?"),
 ]
-
 numerical_lifestyle = [
     ("days_alc", "During the past 30 days, how many days per week or per month did you have at least one drink of any alcoholic beverage?"),
     ("drinks_alc", "One drink is equivalent to a 12-ounce beer, a 5-ounce glass of wine, or a drink with one shot of liquor. During the past 30 days, on the days when you drank, about how many drinks did you drink on the average?  (A 40 ounce beer would count as 3 drinks, or a cocktail drink with 2 shots would count as 2 drinks.)"),
 ]
-
+#%%
 app.layout = html.Div([
     html.H1("Machine Learning for Non-Skin Cancer Assessment: Integrating Clinical, Socioeconomic, and Lifestyle Data"),
     html.H2("By: Rohith Pydi"),
@@ -227,53 +224,28 @@ app.layout = html.Div([
         ),
     ]) for id, question, choices in dropdown_medical],
 
-    # # Dynamic creation of numerical inputs based on the specified questions
-    # *[html.Div([
-    #     html.H3(question),
-    #     dcc.Input(
-    #         id=f'input-{id}',
-    #         type='number',
-    #         placeholder=f'Enter answer'
-    #     ),
-    # ]) for id, question in numerical_questions],
-
     html.Button('Submit Answers', id='button'),
 
     html.Div(id='output-text', style={'fontSize': 30}),  # Display the selected answers
 
-    html.Hr(),  # Add a horizontal line
-
-    # html.H2("Selected Answers DataFrame:"),
-
-    # dash_table.DataTable(
-    #     id='datatable',
-    #     columns=[{'name': col, 'id': col} for col in df_answers.columns],
-    #     data=df_answers.to_dict('records')
-    # )
+    html.Hr()
 ])
 
 # Callback to update the output text and DataFrame based on the selected answers
 @app.callback(
-    # [Output('output-text', 'children'), 
-    #  Output('datatable', 'data')],
     Output('output-text', 'children'),
     [Input('button', 'n_clicks')],
-    [State(f'dropdown-{id.replace(" ", "-")}', 'value') for id, _, _ in dropdown_demographic],
-    [State(f'dropdown-{id.replace(" ", "-")}', 'value') for id, _, _ in dropdown_socioeconomic],
-    [State(f'dropdown-{id.replace(" ", "-")}', 'value') for id, _, _ in dropdown_life_style],
-    [State(f'dropdown-{id.replace(" ", "-")}', 'value') for id, _, _ in dropdown_medical],
-    [State(f'input-{id}', 'value') for id, _ in numerical_demographic],
-    [State(f'input-{id}', 'value') for id, _ in numerical_lifestyle]
+    [Input(f'dropdown-{id}', 'value') for id, _, _ in dropdown_demographic],
+    [Input(f'input-{id}', 'value') for id, _ in numerical_demographic],
+    [Input(f'dropdown-{id}', 'value') for id, _, _ in dropdown_socioeconomic],
+    [Input(f'dropdown-{id}', 'value') for id, _, _ in dropdown_life_style],
+    [Input(f'input-{id}', 'value') for id, _ in numerical_lifestyle],
+    [Input(f'dropdown-{id}', 'value') for id, _, _ in dropdown_medical]
 )
 
 def update_output(n_clicks, *selected_answers):
     if n_clicks is not None:
         if all(selected_answers):
-            # Display the selected answers in the output text
-            # output_text = "You clicked the button! Chosen answers:\n"
-            # + "\n".join([f"{question}: {answer} : {id}" for question, answer, id in zip([question for question, _, _ in questions], selected_answers, [id for _, _, id in questions])])
-
-            # Append the selected answers to the DataFrame
             global df_answers
             df_answers = pd.DataFrame(columns=['ID', 'Answer'])
             df_answers = pd.concat([df_answers, 
@@ -291,39 +263,16 @@ def update_output(n_clicks, *selected_answers):
                                                 'Answer': selected_answers[len(dropdown_demographic) + len(numerical_demographic) + len(dropdown_socioeconomic) + len(dropdown_life_style) + len(numerical_lifestyle):]})
                                                 ], ignore_index=True)
 
-
-            # # Define the data for each column
-            # data = {
-            #     "ID": ["state", "health_insurance", "personal_physician", "doctor_visit_ability", "last_visit",
-            #     "stroke", "skin_cancer", "copd", "depression", "kidney_disease", "diabetes", "employment",
-            #     "pneumonia_shot", "hiv_risk", "metropolitan_status", "health_status", "physical activity",
-            #     "chd", "asthma", "arthritis", "race", "sex", "colonoscopy", "sigmoidoscopy", "age",
-            #     "education", "income", "smoking", "height", "weight", "days_alc", "drinks_alc"],
-            #     "Answer": ["Pennsylvania", "Purchased through employer", "Yes, only one", "Could see doctor all times", 
-            #                "Within past year", "No", "No", "No", "Yes", "No", "No", "Employed for wages", "No", "No",
-            #                  "Metropolitan counties", "Very Good", "Had physical activity", "No", "Never", "Not diagnosed", 
-            #                  "White only, non-Hispanic", "Male", "Age Less than 45", "Age Less than 45", "35 to 39",  
-            #                  "Graduated from College or Technical School", "$50,000 to < $100,000", "Former smoker", "70", "206.6",
-            #                   2, 30]
-            # }
-
-            # # # Create the DataFrame
-            # df_answers = pd.DataFrame(data)
-
-            # #convert string to float
-            # df_answers['Answer'] = df_answers['Answer'].astype(float)
-
-            
             #calculate bmi and append to df_answers
             height = pd.to_numeric(df_answers[df_answers['ID'] == 'height']['Answer'].values[0])
-            weight = df_answers[df_answers['ID'] == 'weight']['Answer'].values[0]
+            weight = pd.to_numeric(df_answers[df_answers['ID'] == 'weight']['Answer'].values[0])
             bmi = round((weight / (height * height)) * 703, 2)
             df_answers = pd.concat([df_answers, 
                                     pd.DataFrame({'ID': 'bmi', 'Answer': [bmi]})], ignore_index=True)
 
             #calculate drinks_consumed_last_30_days and append to df_answers
-            days_alc = df_answers[df_answers['ID'] == 'days_alc']['Answer'].values[0]
-            drinks_alc = df_answers[df_answers['ID'] == 'drinks_alc']['Answer'].values[0]
+            days_alc = pd.to_numeric(df_answers[df_answers['ID'] == 'days_alc']['Answer'].values[0])
+            drinks_alc = pd.to_numeric(df_answers[df_answers['ID'] == 'drinks_alc']['Answer'].values[0])
             drinks_consumed_last_30_days = round(days_alc * drinks_alc, 2)
             df_answers = pd.concat([df_answers, 
                                     pd.DataFrame({'ID': 'drinks_consumed_last_30_days', 'Answer': [drinks_consumed_last_30_days]})], ignore_index=True)
@@ -353,10 +302,8 @@ def update_output(n_clicks, *selected_answers):
                     df_answers_encoded[column] = le.transform(df_answers_encoded[column])
             
             patient = df_answers_encoded.iloc[0]
-            # prediction1 = undersampling_rf.predict([patient])
             probability1 = undersampling_rf.predict_proba([patient])
             
-            # prediction2 = smoteNC_rf.predict([patient])
             probability2 = smoteNC_rf.predict_proba([patient])
 
             probability = (probability1 + probability2) / 2.0
@@ -367,9 +314,7 @@ def update_output(n_clicks, *selected_answers):
             else:
                 output_text = "You are likely at risk for cancer. Your probability of having cancer is " + str(round(probability[0][1] * 100, 2)) + "%."
             
-            # Return updated output text and DataFrame data
             return output_text
-            # , df_answers.to_dict('records')
         else:
             return "Please provide an answer for each question before clicking the button.", df_answers.to_dict('records')
 

@@ -59,7 +59,7 @@ dropdown_demographic = [
 dropdown_socioeconomic = [
     ("education", "What is your highest level of education completed?", [
         'Did not graduate High School', 'Graduated High School',
-        'Attended College or Technical School', 'Graduated from  College or Technical School',
+        'Attended College or Technical School', 'Graduated from College or Technical School',
         "Don't know / Not Sure / Refused / Missing"
     ]),
     ("employment", "Are you currently _______________?", [
@@ -154,7 +154,7 @@ numerical_demographic = [
     ("weight", "What is your weight (in lbs)?"),
 ]
 numerical_lifestyle = [
-    ("days_alc", "During the past 30 days, how many days per week or per month did you have at least one drink of any alcoholic beverage?"),
+    ("days_alc", "During the past 30 days, how many days did you have at least one drink of any alcoholic beverage?"),
     ("drinks_alc", "One drink is equivalent to a 12-ounce beer, a 5-ounce glass of wine, or a drink with one shot of liquor. During the past 30 days, on the days when you drank, about how many drinks did you drink on the average?  (A 40 ounce beer would count as 3 drinks, or a cocktail drink with 2 shots would count as 2 drinks.)"),
 ]
 #%%
